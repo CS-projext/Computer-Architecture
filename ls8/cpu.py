@@ -68,7 +68,6 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -99,24 +98,48 @@ class CPU:
     def run(self):
         """Run the CPU."""
         halt = False
-        
+
         while not halt:
             ir = self.ram_read(self.pc)
+            operands = ir >> 6
+            use_alu = ir >> 5 & 0b001
 
-            if ir == self.opcode["LDI"]:
-                reg_a = self.ram_read(self.pc + 1)
-                mdr = self.ram_read(self.pc + 2)
-                self.reg[reg_a] = mdr
-                self.pc += 3
+            if operands == 2:
+                if use_alu:
+                    op = ""
+                    if ir == self.opcode["ADD"]:
+                        op = "ADD"
+                    elif ir == self.opcode["SUB"]:
+                        op = "SUB"
+                    elif ir == self.opcode["MUL"]:
+                        op = "MUL"
+                    elif ir == self.opcode["DIV"]:
+                        op = "DIV"
+                    else:
+                        print("Unknown opcode. Ending program.")
+                        halt = True
+                        break
+                    reg_a = self.ram_read(self.pc + 1)
+                    reg_b = self.ram_read(self.pc + 2)
+                    self.alu(op, reg_a, reg_b)
+                    self.pc += 3
 
-            elif ir == self.opcode["PRN"]:
-                reg_a = self.ram_read(self.pc + 1)
-                print(self.reg[reg_a])
-                self.pc += 2
+                elif ir == self.opcode["LDI"]:
+                    reg_a = self.ram_read(self.pc + 1)
+                    mdr = self.ram_read(self.pc + 2)
+                    self.reg[reg_a] = mdr
+                    self.pc += 3
 
-            elif ir == self.opcode["HLT"]:
-                halt = True
-                
-            else:
-                print("Unknown opcode. Ending program.")
-                halt = True
+            elif operands == 1:
+                if ir == self.opcode["PRN"]:
+                    reg_a = self.ram_read(self.pc + 1)
+                    print(self.reg[reg_a])
+                    self.pc += 2
+
+            elif operands == 0:
+                if ir == self.opcode["HLT"]:
+                    halt = True
+
+                else:
+                    print("Unknown opcode. Ending program.")
+                    halt = True
