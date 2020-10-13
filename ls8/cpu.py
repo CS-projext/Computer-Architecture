@@ -12,7 +12,9 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.fl = 0
-        self.opcode = {
+        #stack pointer
+        self.reg[7] = 255
+        self.opcodes = {
             "ADD": 0b10100000,
             "AND": 0b10101000,
             "CALL": 0b01010000,
@@ -55,6 +57,16 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
+
+    def push(self, mdr):
+        self.reg[7] -= 1
+        self.ram_write(mdr, self.reg[7])
+
+    def pop(self):
+        mdr = self.ram_read(self.reg[7])
+        if self.reg[7] < 255:
+            self.reg[7] += 1
+        return mdr
 
     def ram_read(self, mar):
         return self.ram[mar]
@@ -105,7 +117,6 @@ class CPU:
     def run(self):
         """Run the CPU."""
         halt = False
-
         while not halt:
             ir = self.ram_read(self.pc)
             operands = ir >> 6
@@ -113,13 +124,13 @@ class CPU:
             if operands == 2:
                 if use_alu:
                     op = ""
-                    if ir == self.opcode["ADD"]:
+                    if ir == self.opcodes["ADD"]:
                         op = "ADD"
-                    elif ir == self.opcode["SUB"]:
+                    elif ir == self.opcodes["SUB"]:
                         op = "SUB"
-                    elif ir == self.opcode["MUL"]:
+                    elif ir == self.opcodes["MUL"]:
                         op = "MUL"
-                    elif ir == self.opcode["DIV"]:
+                    elif ir == self.opcodes["DIV"]:
                         op = "DIV"
                     else:
                         raise Exception("Unknown opcode. Ending program.")
@@ -130,18 +141,27 @@ class CPU:
                         raise Exception("Error: divide by 0")
                     self.alu(op, reg_a, reg_b)
 
-                elif ir == self.opcode["LDI"]:
+                elif ir == self.opcodes["LDI"]:
                     reg_a = self.ram_read(self.pc + 1)
                     mdr = self.ram_read(self.pc + 2)
                     self.reg[reg_a] = mdr
 
             elif operands == 1:
-                if ir == self.opcode["PRN"]:
+                if ir == self.opcodes["PRN"]:
                     reg_a = self.ram_read(self.pc + 1)
                     print(self.reg[reg_a])
+                
+                elif ir == self.opcodes["PUSH"]:
+                    reg_a = self.ram_read(self.pc + 1)
+                    mdr = self.reg[reg_a]
+                    self.push(mdr)
+                
+                elif ir == self.opcodes["POP"]:
+                    reg_a = self.ram_read(self.pc + 1)
+                    self.reg[reg_a] = self.pop()
 
             elif operands == 0:
-                if ir == self.opcode["HLT"]:
+                if ir == self.opcodes["HLT"]:
                     halt = True
 
                 else:
