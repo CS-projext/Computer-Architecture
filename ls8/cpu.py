@@ -117,10 +117,13 @@ class CPU:
     def run(self):
         """Run the CPU."""
         halt = False
+        
         while not halt:
             ir = self.ram_read(self.pc)
             operands = ir >> 6
             use_alu = ir >> 5 & 0b001
+            is_sub = ir >> 4 & 0b0001
+
             if operands == 2:
                 if use_alu:
                     op = ""
@@ -160,11 +163,22 @@ class CPU:
                     reg_a = self.ram_read(self.pc + 1)
                     self.reg[reg_a] = self.pop()
 
+                elif ir == self.opcodes["CALL"]:
+                    reg_a = self.ram_read(self.pc + 1)
+                    mar = self.pc + 2
+                    self.push(mar)
+                    self.pc = self.reg[reg_a]
+
             elif operands == 0:
                 if ir == self.opcodes["HLT"]:
                     halt = True
 
+                elif ir == self.opcodes["RET"]:
+                    mar = self.pop()
+                    self.pc = mar
+
                 else:
                     raise Exception("Unknown opcode. Ending program.")
-
-            self.pc += operands + 1 # while
+            
+            if is_sub == 0:
+                self.pc += operands + 1 # while
