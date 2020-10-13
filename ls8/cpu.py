@@ -129,19 +129,16 @@ class CPU:
                     if self.reg[reg_b] == 0:
                         raise Exception("Error: divide by 0")
                     self.alu(op, reg_a, reg_b)
-                    self.pc += 3
 
                 elif ir == self.opcode["LDI"]:
                     reg_a = self.ram_read(self.pc + 1)
                     mdr = self.ram_read(self.pc + 2)
                     self.reg[reg_a] = mdr
-                    self.pc += 3
 
             elif operands == 1:
                 if ir == self.opcode["PRN"]:
                     reg_a = self.ram_read(self.pc + 1)
                     print(self.reg[reg_a])
-                    self.pc += 2
 
             elif operands == 0:
                 if ir == self.opcode["HLT"]:
@@ -149,3 +146,5 @@ class CPU:
 
                 else:
                     raise Exception("Unknown opcode. Ending program.")
+
+            self.pc += operands + 1 # while
