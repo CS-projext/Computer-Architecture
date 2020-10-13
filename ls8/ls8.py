@@ -8,13 +8,15 @@ from cpu import *
 cpu = CPU()
 
 program = []
-file_name = input("Run: ")
-# file_name = "print8.ls8"
+if len(sys.argv) > 1:
+  file_name = sys.argv[1]
+else:
+  file_name = input("Run: ")
 
 f = open(f"examples/{file_name}", "r")
 for line in f.readlines():
   if line[0] == "1" or line[0] == "0":
-    line_code = "0b" + line[:8]
+    line_code = line[:8]
     program.append(int(line_code, 2))
 f.close()
 
