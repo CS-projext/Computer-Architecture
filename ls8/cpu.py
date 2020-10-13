@@ -52,7 +52,6 @@ class CPU:
     def load(self, program):
         """Load a program into memory."""
         address = 0
-
         for instruction in program:
             self.ram[address] = instruction
             address += 1
@@ -63,11 +62,19 @@ class CPU:
     def ram_write(self, mdr, mar):
         self.ram[mar] = mdr
 
+    def byte(self, value):
+        return value & 0xFF
+
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
+            self.reg[reg_a] = self.byte(self.reg[reg_a] + self.reg[reg_b])
+        elif op == "SUB":
+            self.reg[reg_a] = self.byte(self.reg[reg_a] - self.reg[reg_b])
+        elif op == "MUL":
+            self.reg[reg_a] = self.byte(self.reg[reg_a] * self.reg[reg_b])
+        elif op == "DIV":
+            self.reg[reg_a] = self.byte(self.reg[reg_a] // self.reg[reg_b])    
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -103,7 +110,6 @@ class CPU:
             ir = self.ram_read(self.pc)
             operands = ir >> 6
             use_alu = ir >> 5 & 0b001
-
             if operands == 2:
                 if use_alu:
                     op = ""
@@ -116,11 +122,12 @@ class CPU:
                     elif ir == self.opcode["DIV"]:
                         op = "DIV"
                     else:
-                        print("Unknown opcode. Ending program.")
-                        halt = True
-                        break
+                        raise Exception("Unknown opcode. Ending program.")
+                    
                     reg_a = self.ram_read(self.pc + 1)
                     reg_b = self.ram_read(self.pc + 2)
+                    if self.reg[reg_b] == 0:
+                        raise Exception("Error: divide by 0")
                     self.alu(op, reg_a, reg_b)
                     self.pc += 3
 
@@ -141,5 +148,4 @@ class CPU:
                     halt = True
 
                 else:
-                    print("Unknown opcode. Ending program.")
-                    halt = True
+                    raise Exception("Unknown opcode. Ending program.")
