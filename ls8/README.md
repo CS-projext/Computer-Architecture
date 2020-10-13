@@ -287,7 +287,6 @@ class Foo:
 c = Foo()
 c.run()
 ```
-# TODO
 ## Step 10: Implement System Stack
 
 All CPUs manage a _stack_ that can be used to store information temporarily.
@@ -309,7 +308,7 @@ If you run `python3 ls8.py examples/stack.ls8` you should see the output:
 4
 1
 ```
-
+# TODO
 ## Step 11: Implement Subroutine Calls
 
 Back in the old days, functions were called _subroutines_. In machine code,
