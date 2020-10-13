@@ -308,7 +308,7 @@ If you run `python3 ls8.py examples/stack.ls8` you should see the output:
 4
 1
 ```
-# TODO
+
 ## Step 11: Implement Subroutine Calls
 
 Back in the old days, functions were called _subroutines_. In machine code,
@@ -348,6 +348,7 @@ If you run `python3 ls8.py examples/call.ls8` you should see the output:
 60
 ```
 
+# TODO
 ## Stretch Goal: Timer Interrupts
 
 Add interrupts to the LS-8 emulator.
