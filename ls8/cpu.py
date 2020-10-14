@@ -125,9 +125,6 @@ class CPU:
             use_alu = ir >> 5 & 0b001
             is_sub = ir >> 4 & 0b0001
 
-            if self.pc + operands >= self.reg[7]:
-                raise Exception(f"Stack overflow at address: {self.pc}")
-
             if operands == 2:
                 
                 if use_alu:
