@@ -119,12 +119,17 @@ class CPU:
         halt = False
         
         while not halt:
+
             ir = self.ram_read(self.pc)
             operands = ir >> 6
             use_alu = ir >> 5 & 0b001
             is_sub = ir >> 4 & 0b0001
 
+            if self.pc + operands >= self.reg[7]:
+                raise Exception(f"Stack overflow at address: {self.pc}")
+
             if operands == 2:
+                
                 if use_alu:
                     op = ""
                     if ir == self.opcodes["ADD"]:
@@ -167,6 +172,13 @@ class CPU:
                     reg_a = self.ram_read(self.pc + 1)
                     mar = self.pc + 2
                     self.push(mar)
+                    self.pc = self.reg[reg_a]
+
+                elif ir == self.opcodes["JMP"]:
+                    reg_a = self.ram_read(self.pc + 1)
+                    print("REG: ", reg_a)
+                    print("STACK: ", self.reg[7])
+                    print("PC: ", self.pc)
                     self.pc = self.reg[reg_a]
 
             elif operands == 0:
