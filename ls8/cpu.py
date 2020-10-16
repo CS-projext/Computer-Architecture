@@ -77,6 +77,14 @@ class CPU:
     def byte(self, value):
         return value & 0xFF
 
+    def get_fl(self, flag):
+        if flag == "L":
+            return self.fl >> 2
+        elif flag == "G":
+            return self.fl >> 1 & 0b0000001
+        elif flag == "E":
+            return self.fl & 0b00000001
+
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
         if op == "ADD":
@@ -87,6 +95,17 @@ class CPU:
             self.reg[reg_a] = self.byte(self.reg[reg_a] * self.reg[reg_b])
         elif op == "DIV":
             self.reg[reg_a] = self.byte(self.reg[reg_a] // self.reg[reg_b])    
+        elif op == "CMP":
+            value_a = self.reg[reg_a]
+            value_b = self.reg[reg_b]
+            if value_a < value_b:
+                self.fl = 0b00000100
+            elif value_a > value_b:
+                self.fl = 0b00000010
+            elif value_a == value_b:
+                self.fl = 0b00000001
+            else:
+                self.fl = 0
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -119,7 +138,6 @@ class CPU:
         halt = False
         
         while not halt:
-
             ir = self.ram_read(self.pc)
             operands = ir >> 6
             use_alu = ir >> 5 & 0b001
@@ -137,6 +155,8 @@ class CPU:
                         op = "MUL"
                     elif ir == self.opcodes["DIV"]:
                         op = "DIV"
+                    elif ir == self.opcodes["CMP"]:
+                        op = "CMP"
                     else:
                         raise Exception("Unknown opcode. Ending program.")
                     
@@ -177,6 +197,18 @@ class CPU:
                     print("STACK: ", self.reg[7])
                     print("PC: ", self.pc)
                     self.pc = self.reg[reg_a]
+
+                elif ir == self.opcodes["JEQ"]:
+                    if self.get_fl("E") == 1:
+                        self.pc = self.reg[self.ram_read(self.pc + 1)]
+                    else:
+                        is_sub = 0
+
+                elif ir == self.opcodes["JNE"]:
+                    if self.get_fl("E") == 0:
+                        self.pc = self.reg[self.ram_read(self.pc + 1)]
+                    else:
+                        is_sub = 0
 
             elif operands == 0:
                 if ir == self.opcodes["HLT"]:
